@@ -1,15 +1,16 @@
-import numpy as np
-import scipy.misc
-import scipy.io
+import math
+from os import PathLike
 from os.path import dirname
 from os.path import join
+
+import numpy as np
 import scipy
-from PIL import Image
-import numpy as np
+import scipy.io
+import scipy.misc
 import scipy.ndimage
-import numpy as np
 import scipy.special
-import math
+import skimage
+from PIL import Image
 
 gamma_range = np.arange(0.2, 10, 0.001)
 a = scipy.special.gamma(2.0/gamma_range)
@@ -168,9 +169,9 @@ def _get_patches_generic(img, patch_size, is_train, stride):
     if woffset > 0:
         img = img[:, :-woffset]
 
-
     img = img.astype(np.float32)
-    img2 = scipy.misc.imresize(img, 0.5, interp='bicubic', mode='F')
+    # img2 = scipy.misc.imresize(img, 0.5, interp='bicubic', mode='F')
+    img2 = skimage.transform.resize(img, [int(np.floor(h / 2)), int(np.floor(w / 2))], order=3)
 
     mscn1, var, mu = compute_image_mscn_transform(img)
     mscn1 = mscn1.astype(np.float32)
@@ -185,6 +186,7 @@ def _get_patches_generic(img, patch_size, is_train, stride):
     feats = np.hstack((feats_lvl1, feats_lvl2))# feats_lvl3))
 
     return feats
+
 
 def niqe(inputImgData):
 
@@ -216,20 +218,6 @@ def niqe(inputImgData):
     return niqe_score
 
 
-if __name__ == "__main__":
-    
-    ref = np.array(Image.open('./test_imgs/bikes.bmp').convert('LA'))[:,:,0] # ref
-    dis = np.array(Image.open('./test_imgs/bikes_distorted.bmp').convert('LA'))[:,:,0] # dis
-
-    print('NIQE of ref bikes image is: %0.3f'% niqe(ref))
-    print('NIQE of dis bikes image is: %0.3f'% niqe(dis))
-
-    ref = np.array(Image.open('./test_imgs/parrots.bmp').convert('LA'))[:,:,0] # ref
-    dis = np.array(Image.open('./test_imgs/parrots_distorted.bmp').convert('LA'))[:,:,0] # dis
-    
-    print('NIQE of ref parrot image is: %0.3f'% niqe(ref))
-    print('NIQE of dis parrot image is: %0.3f'% niqe(dis))
-
-
-
-
+def open_img(img_path: PathLike):
+    """Opens a given image in a format in which it can be fed to the `niqe()` function."""
+    return np.array(Image.open(str(img_path)).convert('LA'))[:,:,0]
