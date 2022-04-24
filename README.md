@@ -3,7 +3,7 @@ NIQE (Completely blind image quality assessment) for grayscale images using skvi
 
 # Usage
 ```
->>> from niqe.py import open_img, niqe
+>>> from niqe import open_img, niqe
 >>> img_path = <path_to_img>
 >>> niqe(open_img(img_path))
 ```
